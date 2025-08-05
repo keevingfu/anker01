@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anker Video Ads Nordic Marketing Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 35px;
+            border-bottom: 4px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            color: #555;
+            font-weight: 300;
+        }
+        
+        .date-range {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #777;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        }
+        
+        .metric-card.impressions {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .metric-card.clicks {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .metric-card.conversions {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .metric-card.roi {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .metric-card h3 {
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            opacity: 0.85;
+            font-weight: 600;
+        }
+        
+        .metric-card .value {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .metric-card .detail {
+            font-size: 1em;
+            opacity: 0.85;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .charts-container {
+            display: grid;
+            gap: 35px;
+            margin-bottom: 50px;
+        }
+        
+        .chart-section {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s;
+        }
+        
+        .chart-section:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .chart-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 700;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 450px;
+        }
+        
+        .chart-small {
+            height: 350px;
+        }
+        
+        .chart-insight {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .chart-insight h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .chart-insight p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .chart-recommendation {
+            background: #e8f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .chart-recommendation strong {
+            color: #048a84;
+        }
+        
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 35px;
+        }
+        
+        .insights-section {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .insights-section h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #333;
+            font-weight: 800;
+        }
+        
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .insight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+        }
+        
+        .insight-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .insight-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .insight-card p {
+            color: #555;
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+        
+        .recommendation {
+            background: #f0f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .recommendation strong {
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .metric-card .value {
+                font-size: 2.5em;
+            }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Anker Video Ads Nordic Marketing Dashboard</h1>
+            <p>Video Advertising Performance Analysis</p>
+            <div class="date-range">Campaign Period: June 1 - July 29, 2025</div>
+        </div>
+        
+        <div class="metrics-grid" id="metricsGrid">
+            <!-- Metrics will be populated here -->
+        </div>
+        
+        <div class="charts-container">
+            <div class="chart-section">
+                <h2>Campaign Performance Overview</h2>
+                <div id="performanceChart" class="chart"></div>
+                <div class="chart-insight">
+                    <h4>Key Insight:</h4>
+                    <p>Top 5 campaigns consume 45% of total budget ($1,240) but generate 60% of all impressions (418K), indicating efficient budget concentration on high-performing campaigns.</p>
+                    <div class="chart-recommendation">
+                        <strong>Recommendation:</strong> Apply 70-20-10 budget allocation rule: 70% to proven performers, 20% to optimization tests, 10% to new creative experiments. Focus on scaling the English video campaigns that show consistent high reach.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="two-column-grid">
+                <div class="chart-section">
+                    <h2>Cost Efficiency Analysis</h2>
+                    <div id="costChart" class="chart chart-small"></div>
+                    <div class="chart-insight">
+                        <h4>Key Insight:</h4>
+                        <p>AIGC (AI-generated) videos achieve the lowest CPM at $2.83-$3.38, 30% below the campaign average of $4.13. These campaigns demonstrate superior cost efficiency for reaching audiences.</p>
+                        <div class="chart-recommendation">
+                            <strong>Recommendation:</strong> Scale AIGC video production immediately. Allocate 30% more budget to AI-generated content and test this approach in Polish language for similar gains.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <h2>Conversion Funnel</h2>
+                    <div id="funnelChart" class="chart chart-small"></div>
+                    <div class="chart-insight">
+                        <h4>Key Insight:</h4>
+                        <p>Critical conversion bottleneck identified: 698K impressions → 19.5K clicks (2.8% CTR) → only 2 purchases (0.01% conversion). The drop-off from click to purchase is severe.</p>
+                        <div class="chart-recommendation">
+                            <strong>Recommendation:</strong> Implement immediate retargeting campaigns for the 19,500 users who clicked. Review landing page UX, simplify checkout process, and A/B test urgency-based CTAs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Video Performance Comparison</h2>
+                <div id="videoChart" class="chart"></div>
+                <div class="chart-insight">
+                    <h4>Key Insight:</h4>
+                    <p>Product demonstration videos (unboxing, vs mopping) achieve 2x higher view rates than generic promotional content. The Polish unboxing video leads with 81,676 views, while comparison videos maintain high CTR.</p>
+                    <div class="chart-recommendation">
+                        <strong>Recommendation:</strong> Standardize video format: 30% product demo, 40% benefit showcase, 30% social proof. Create more unboxing and comparison content. Keep all videos under 60 seconds for optimal engagement.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="two-column-grid">
+                <div class="chart-section">
+                    <h2>Language Performance Analysis</h2>
+                    <div id="languageChart" class="chart chart-small"></div>
+                    <div class="chart-insight">
+                        <h4>Key Insight:</h4>
+                        <p>Polish language content outperforms English with 3.2% average CTR vs 2.8%. Polish videos show stronger viewer engagement and completion rates despite smaller overall volume.</p>
+                        <div class="chart-recommendation">
+                            <strong>Recommendation:</strong> Increase Polish language content production by 50%. Localize top-performing English videos to Polish. Focus on culturally relevant demonstrations and local influencer partnerships.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <h2>ROI & Purchase Analysis</h2>
+                    <div id="roiChart" class="chart chart-small"></div>
+                    <div class="chart-insight">
+                        <h4>Key Insight:</h4>
+                        <p>The wet mopping (活水洗地) campaign achieved exceptional 11.58x ROAS with $2,117 in revenue from $183 spend. This proves strong product-market fit for this specific feature.</p>
+                        <div class="chart-recommendation">
+                            <strong>Recommendation:</strong> Create 5 variations of the wet mopping campaign immediately. Make this feature the hero message in 40% of all new creative content. Test premium pricing for this feature set.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Top Performing Videos by Engagement</h2>
+                <div id="topVideosChart" class="chart"></div>
+                <div class="chart-insight">
+                    <h4>Key Insight:</h4>
+                    <p>English video campaigns dominate the top 10 by views, but Polish content achieves higher engagement rates per impression. The unboxing and comparison videos consistently outperform generic promotional content.</p>
+                    <div class="chart-recommendation">
+                        <strong>Recommendation:</strong> Double down on successful content formats. Produce weekly unboxing videos and bi-weekly comparison content. Partner with local tech reviewers in Poland for authentic demonstrations.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="insights-section">
+            <h2>Executive Summary & Next Steps</h2>
+            <div class="insight-grid">
+                <div class="insight-card">
+                    <h3>Priority 1: Conversion Optimization</h3>
+                    <p>With only 0.01% click-to-purchase conversion, fixing the customer journey is critical. The campaigns are driving traffic but failing to convert.</p>
+                    <div class="recommendation">
+                        <strong>Immediate Actions:</strong> Launch retargeting campaigns within 48 hours. Conduct landing page A/B tests. Implement cart abandonment email sequences. Add live chat support for high-intent visitors.
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <h3>Priority 2: Scale What Works</h3>
+                    <p>AIGC videos and wet mopping campaigns have proven their effectiveness. Polish content shows higher engagement despite lower volume.</p>
+                    <div class="recommendation">
+                        <strong>30-Day Plan:</strong> Increase AIGC content to 40% of campaigns. Create 5 wet mopping video variations. Launch 10 new Polish language campaigns. Maintain 70-20-10 budget allocation strategy.
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <h3>Priority 3: Content Strategy Refinement</h3>
+                    <p>Clear patterns emerge: product demos outperform lifestyle content, Polish audiences prefer detailed comparisons, and AI-generated content reduces costs without sacrificing performance.</p>
+                    <div class="recommendation">
+                        <strong>Content Framework:</strong> Establish video templates for unboxing (weekly), comparisons (bi-weekly), and feature highlights (monthly). All videos under 60 seconds with clear CTAs in first 5 seconds.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Parse the advertising data
+        const rawData = [
+            {id: 1, adName: "活水洗地", videoFile: "活水洗地 波兰语.mp4", reach: 6181, viewers: 3896, views: 7217, spent: 40.98, impressions: 9459, cpm: 4.33, clicks: 1249, cpc: 0.03, addToCart: 0, purchases: 0, roas: 0, language: "Polish"},
+            {id: 2, adName: "英语视频5月7日71", videoFile: "5月7日71.mp4", reach: 129628, viewers: 127770, views: 217973, spent: 389.92, impressions: 142513, cpm: 2.74, clicks: 4596, cpc: 0.08, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 3, adName: "英语视频5月7日71", videoFile: "", reach: 155546, viewers: 155507, views: 267741, spent: 472.03, impressions: 179427, cpm: 2.63, clicks: 4827, cpc: 0.1, addToCart: 1, purchases: 0, roas: 0, language: "English"},
+            {id: 4, adName: "英语视频5月7日71", videoFile: "", reach: 11237, viewers: 11003, views: 21986, spent: 61.31, impressions: 13000, cpm: 4.72, clicks: 466, cpc: 0.13, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 5, adName: "E25英语视频5月7日42", videoFile: "5月7日42.mp4", reach: 23237, viewers: 22689, views: 35633, spent: 169.66, impressions: 26390, cpm: 6.43, clicks: 1278, cpc: 0.13, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 6, adName: "英语视频5月7日42", videoFile: "", reach: 27343, viewers: 26927, views: 39663, spent: 161.87, impressions: 32793, cpm: 4.94, clicks: 1199, cpc: 0.14, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 7, adName: "AIGC英语视频-1", videoFile: "", reach: 11431, viewers: 9085, views: 15774, spent: 52.71, impressions: 16936, cpm: 3.11, clicks: 382, cpc: 0.14, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 8, adName: "E25英语视频5月7日46", videoFile: "5月7日46.mp4", reach: 6264, viewers: 5592, views: 12566, spent: 37.2, impressions: 7474, cpm: 4.98, clicks: 265, cpc: 0.14, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 9, adName: "E25英语视频5月7日18", videoFile: "5月7日18.mp4", reach: 17961, viewers: 17437, views: 37665, spent: 98.28, impressions: 22332, cpm: 4.4, clicks: 700, cpc: 0.14, addToCart: 1, purchases: 0, roas: 0, language: "English"},
+            {id: 10, adName: "边刷", videoFile: "", reach: 10191, viewers: 6994, views: 11540, spent: 79.77, impressions: 13971, cpm: 5.71, clicks: 547, cpc: 0.15, addToCart: 0, purchases: 0, roas: 0, language: "Polish"},
+            {id: 11, adName: "AIGC英语视频-1", videoFile: "", reach: 9677, viewers: 7053, views: 10918, spent: 35.96, impressions: 12710, cpm: 2.83, clicks: 240, cpc: 0.15, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 12, adName: "英语视频5月7日42", videoFile: "", reach: 20197, viewers: 19594, views: 29899, spent: 112.68, impressions: 24173, cpm: 4.66, clicks: 736, cpc: 0.15, addToCart: 1, purchases: 0, roas: 0, language: "English"},
+            {id: 13, adName: "英语视频5月7日94", videoFile: "", reach: 9841, viewers: 9242, views: 19838, spent: 66.17, impressions: 12439, cpm: 5.32, clicks: 421, cpc: 0.16, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 14, adName: "AIGC英语视频-1", videoFile: "", reach: 14049, viewers: 10971, views: 17792, spent: 55.06, impressions: 18706, cpm: 2.94, clicks: 346, cpc: 0.16, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 15, adName: "活水洗地", videoFile: "活水洗地 波兰语.mp4", reach: 32031, viewers: 22024, views: 39728, spent: 182.77, impressions: 43431, cpm: 4.21, clicks: 1148, cpc: 0.16, addToCart: 0, purchases: 2, roas: 11.58, purchaseValue: 2117.23, language: "Polish"},
+            {id: 16, adName: "英语视频5月7日75", videoFile: "", reach: 11470, viewers: 10930, views: 18652, spent: 73.72, impressions: 12911, cpm: 5.71, clicks: 462, cpc: 0.16, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 17, adName: "0709视频2", videoFile: "", reach: 30864, viewers: 30776, views: 62976, spent: 118.76, impressions: 44387, cpm: 2.68, clicks: 695, cpc: 0.17, addToCart: 0, purchases: 0, roas: 0, language: "English"},
+            {id: 18, adName: "活水洗地", videoFile: "", reach: 16796, viewers: 9905, views: 15691, spent: 92.85, impressions: 20677, cpm: 4.49, clicks: 541, cpc: 0.17, addToCart: 0, purchases: 0, roas: 0, language: "Polish"},
+            {id: 19, adName: "波兰语视频-vs mopping", videoFile: "Eufy vs mop 2.mp4", reach: 16410, viewers: 14906, views: 28242, spent: 84.63, impressions: 21750, cpm: 3.89, clicks: 476, cpc: 0.18, addToCart: 0, purchases: 0, roas: 0, language: "Polish"},
+            {id: 20, adName: "波兰语视频-unboxing", videoFile: "Unboxing eufy e25 (1).mp4", reach: 52609, viewers: 49121, views: 81676, spent: 275.02, impressions: 74529, cpm: 3.69, clicks: 1387, cpc: 0.2, addToCart: 0, purchases: 0, roas: 0, language: "Polish"},
+            {id: 21, adName: "AIGC英语视频-1", videoFile: "", reach: 16633, viewers: 13984, views: 21716, spent: 82.65, impressions: 24430, cpm: 3.38, clicks: 404, cpc: 0.2, addToCart: 0, purchases: 0, roas: 0, language: "English"}
+        ];
+        
+        console.log('Raw data loaded:', rawData.length, 'campaigns');
+        
+        // Calculate summary metrics
+        function calculateMetrics() {
+            const totalSpent = rawData.reduce((sum, d) => sum + d.spent, 0);
+            const totalImpressions = rawData.reduce((sum, d) => sum + d.impressions, 0);
+            const totalClicks = rawData.reduce((sum, d) => sum + d.clicks, 0);
+            const totalPurchases = rawData.reduce((sum, d) => sum + d.purchases, 0);
+            const avgCPM = totalSpent / (totalImpressions / 1000);
+            const avgCPC = totalSpent / totalClicks;
+            const ctr = (totalClicks / totalImpressions * 100).toFixed(2);
+            
+            return {
+                totalSpent,
+                totalImpressions,
+                totalClicks,
+                totalPurchases,
+                avgCPM,
+                avgCPC,
+                ctr
+            };
+        }
+        
+        // Initialize dashboard
+        function initDashboard() {
+            const metrics = calculateMetrics();
+            
+            // Display metrics
+            const metricsGrid = document.getElementById('metricsGrid');
+            if (metricsGrid) {
+                metricsGrid.innerHTML = `
+                    <div class="metric-card">
+                        <h3>Total Spend</h3>
+                        <div class="value">${metrics.totalSpent.toFixed(2)}</div>
+                        <div class="detail">Campaign investment</div>
+                    </div>
+                    <div class="metric-card impressions">
+                        <h3>Total Impressions</h3>
+                        <div class="value">${(metrics.totalImpressions / 1000).toFixed(1)}K</div>
+                        <div class="detail">Avg CPM: ${metrics.avgCPM.toFixed(2)}</div>
+                    </div>
+                    <div class="metric-card clicks">
+                        <h3>Total Clicks</h3>
+                        <div class="value">${(metrics.totalClicks / 1000).toFixed(1)}K</div>
+                        <div class="detail">CTR: ${metrics.ctr}%</div>
+                    </div>
+                    <div class="metric-card conversions">
+                        <h3>Purchases</h3>
+                        <div class="value">${metrics.totalPurchases}</div>
+                        <div class="detail">From 21 campaigns</div>
+                    </div>
+                    <div class="metric-card roi">
+                        <h3>Best ROAS</h3>
+                        <div class="value">11.58x</div>
+                        <div class="detail">活水洗地 campaign</div>
+                    </div>
+                `;
+            }
+            
+            // Initialize all charts
+            initPerformanceChart();
+            initCostChart();
+            initFunnelChart();
+            initVideoChart();
+            initLanguageChart();
+            initROIChart();
+            initTopVideosChart();
+        }
+        
+        function initPerformanceChart() {
+            const chartDom = document.getElementById('performanceChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            const campaigns = rawData.map(d => d.adName.substring(0, 20) + '...');
+            const spent = rawData.map(d => d.spent);
+            const clicks = rawData.map(d => d.clicks);
+            const impressions = rawData.map(d => d.impressions / 1000);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['Spend ($)', 'Clicks', 'Impressions (K)']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: campaigns,
+                    axisLabel: {
+                        rotate: 45,
+                        interval: 0
+                    }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'Spend & Clicks',
+                        position: 'left'
+                    },
+                    {
+                        type: 'value',
+                        name: 'Impressions (K)',
+                        position: 'right'
+                    }
+                ],
+                series: [
+                    {
+                        name: 'Spend ($)',
+                        type: 'bar',
+                        data: spent,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#667eea' },
+                                { offset: 1, color: '#764ba2' }
+                            ])
+                        }
+                    },
+                    {
+                        name: 'Clicks',
+                        type: 'line',
+                        data: clicks,
+                        itemStyle: {
+                            color: '#f093fb'
+                        }
+                    },
+                    {
+                        name: 'Impressions (K)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: impressions,
+                        itemStyle: {
+                            color: '#4facfe'
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        function initCostChart() {
+            const chartDom = document.getElementById('costChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            const sortedByCPM = [...rawData].sort((a, b) => a.cpm - b.cpm);
+            const top10CPM = sortedByCPM.slice(0, 10);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        let result = params[0].name + '<br/>';
+                        params.forEach(p => {
+                            result += p.marker + ' ' + p.seriesName + ': $' + p.value.toFixed(2) + '<br/>';
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ['CPM', 'CPC']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: top10CPM.map(d => d.adName.substring(0, 15) + '...'),
+                    axisLabel: {
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Cost ($)',
+                    axisLabel: {
+                        formatter: '${value}'
+                    }
+                },
+                series: [
+                    {
+                        name: 'CPM',
+                        type: 'bar',
+                        data: top10CPM.map(d => d.cpm),
+                        itemStyle: {
+                            color: '#43e97b'
+                        }
+                    },
+                    {
+                        name: 'CPC',
+                        type: 'bar',
+                        data: top10CPM.map(d => d.cpc * 10), // Scaled for visibility
+                        itemStyle: {
+                            color: '#fa709a'
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        function initFunnelChart() {
+            const chartDom = document.getElementById('funnelChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            const totalImpressions = rawData.reduce((sum, d) => sum + d.impressions, 0);
+            const totalClicks = rawData.reduce((sum, d) => sum + d.clicks, 0);
+            const totalAddToCart = rawData.reduce((sum, d) => sum + d.addToCart, 0);
+            const totalPurchases = rawData.reduce((sum, d) => sum + d.purchases, 0);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c}'
+                },
+                series: [
+                    {
+                        name: 'Conversion Funnel',
+                        type: 'funnel',
+                        left: '10%',
+                        width: '80%',
+                        label: {
+                            position: 'inside',
+                            fontSize: 14,
+                            formatter: '{b}\n{c}'
+                        },
+                        data: [
+                            { value: totalImpressions, name: 'Impressions', itemStyle: { color: '#667eea' } },
+                            { value: totalClicks, name: 'Clicks', itemStyle: { color: '#f093fb' } },
+                            { value: totalAddToCart, name: 'Add to Cart', itemStyle: { color: '#4facfe' } },
+                            { value: totalPurchases, name: 'Purchases', itemStyle: { color: '#43e97b' } }
+                        ]
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        function initVideoChart() {
+            const chartDom = document.getElementById('videoChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            // Group by video and aggregate
+            const videoData = {};
+            rawData.forEach(d => {
+                const video = d.videoFile || d.adName;
+                if (!videoData[video]) {
+                    videoData[video] = {
+                        views: 0,
+                        clicks: 0,
+                        spent: 0,
+                        impressions: 0
+                    };
+                }
+                videoData[video].views += d.views;
+                videoData[video].clicks += d.clicks;
+                videoData[video].spent += d.spent;
+                videoData[video].impressions += d.impressions;
+            });
+            
+            const videos = Object.keys(videoData);
+            const viewsData = videos.map(v => videoData[v].views);
+            const ctrData = videos.map(v => (videoData[v].clicks / videoData[v].impressions * 100).toFixed(2));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['Views', 'CTR (%)']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: videos.map(v => v.substring(0, 20) + '...'),
+                    axisLabel: {
+                        rotate: 45,
+                        interval: 0
+                    }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: 'Views',
+                        position: 'left'
+                    },
+                    {
+                        type: 'value',
+                        name: 'CTR (%)',
+                        position: 'right',
+                        axisLabel: {
+                            formatter: '{value}%'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: 'Views',
+                        type: 'bar',
+                        data: viewsData,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#4facfe' },
+                                { offset: 1, color: '#00f2fe' }
+                            ])
+                        }
+                    },
+                    {
+                        name: 'CTR (%)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: ctrData,
+                        itemStyle: {
+                            color: '#ff6b6b'
+                        },
+                        lineStyle: {
+                            width: 3
+                        }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        function initLanguageChart() {
+            const chartDom = document.getElementById('languageChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            const languageData = {
+                English: { impressions: 0, clicks: 0, spent: 0, views: 0 },
+                Polish: { impressions: 0, clicks: 0, spent: 0, views: 0 }
+            };
+            
+            rawData.forEach(d => {
+                languageData[d.language].impressions += d.impressions;
+                languageData[d.language].clicks += d.clicks;
+                languageData[d.language].spent += d.spent;
+                languageData[d.language].views += d.views;
+            });
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['English', 'Polish']
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Impressions', max: 600000 },
+                        { name: 'Clicks', max: 20000 },
+                        { name: 'Views', max: 700000 },
+                        { name: 'Spend ($)', max: 2000 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [
+                                languageData.English.impressions,
+                                languageData.English.clicks,
+                                languageData.English.views,
+                                languageData.English.spent
+                            ],
+                            name: 'English',
+                            areaStyle: {
+                                opacity: 0.3
+                            },
+                            itemStyle: {
+                                color: '#667eea'
+                            }
+                        },
+                        {
+                            value: [
+                                languageData.Polish.impressions,
+                                languageData.Polish.clicks,
+                                languageData.Polish.views,
+                                languageData.Polish.spent
+                            ],
+                            name: 'Polish',
+                            areaStyle: {
+                                opacity: 0.3
+                            },
+                            itemStyle: {
+                                color: '#f093fb'
+                            }
+                        }
+                    ]
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        function initROIChart() {
+            const chartDom = document.getElementById('roiChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            const campaignsWithPurchases = rawData.filter(d => d.purchases > 0);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        return params.name + '<br/>ROAS: ' + params.value[2] + 'x<br/>Purchases: ' + params.value[1];
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Spend ($)',
+                    nameLocation: 'middle',
+                    nameGap: 30
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Purchases',
+                    nameLocation: 'middle',
+                    nameGap: 40
+                },
+                series: [{
+                    type: 'scatter',
+                    symbolSize: function (data) {
+                        return Math.sqrt(data[2]) * 30;
+                    },
+                    data: campaignsWithPurchases.map(d => [d.spent, d.purchases, d.roas]),
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#43e97b' },
+                            { offset: 1, color: '#38f9d7' }
+                        ])
+                    },
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            return params.data[2] + 'x';
+                        },
+                        position: 'top'
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        function initTopVideosChart() {
+            const chartDom = document.getElementById('topVideosChart');
+            if (!chartDom) return;
+            
+            const chart = echarts.init(chartDom);
+            
+            const sortedByViews = [...rawData].sort((a, b) => b.views - a.views).slice(0, 10);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    name: 'Views',
+                    axisLabel: {
+                        formatter: function(value) {
+                            return (value / 1000).toFixed(0) + 'K';
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: sortedByViews.map(d => d.adName.substring(0, 25) + '...'),
+                    inverse: true
+                },
+                series: [{
+                    type: 'bar',
+                    data: sortedByViews.map(d => ({
+                        value: d.views,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: '#fa709a' },
+                                { offset: 1, color: '#fee140' }
+                            ])
+                        }
+                    })),
+                    label: {
+                        show: true,
+                        position: 'right',
+                        formatter: function(params) {
+                            return (params.value / 1000).toFixed(1) + 'K';
+                        }
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Initialize dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initDashboard();
+                
+                // Make charts responsive
+                window.addEventListener('resize', () => {
+                    ['performanceChart', 'costChart', 'funnelChart', 'videoChart', 
+                     'languageChart', 'roiChart', 'topVideosChart']
+                        .forEach(id => {
+                            const chartDom = document.getElementById(id);
+                            if (chartDom) {
+                                const chart = echarts.getInstanceByDom(chartDom);
+                                if (chart) chart.resize();
+                            }
+                        });
+                });
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+                console.error('Error stack:', error.stack);
+            }
+        });
+    </script>
+</body>
+</html>

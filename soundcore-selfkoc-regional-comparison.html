@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundCore Regional Performance Dashboard | Poland, Norway & Sweden</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 45px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 35px;
+            border-bottom: 3px solid #e5e7eb;
+        }
+        
+        .header h1 {
+            font-size: 3.8em;
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 50%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+        
+        .header p {
+            font-size: 1.4em;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            color: #9ca3af;
+        }
+        
+        /* Country Flags */
+        .country-flags {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .country-flag {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+            color: #4b5563;
+        }
+        
+        .flag {
+            width: 32px;
+            height: 24px;
+            border-radius: 4px;
+            background-size: cover;
+        }
+        
+        .flag-poland {
+            background: linear-gradient(to bottom, #ffffff 50%, #dc2626 50%);
+        }
+        
+        .flag-norway {
+            background: linear-gradient(to right, #ef4444 30%, #ffffff 30% 40%, #1d4ed8 40%);
+        }
+        
+        .flag-sweden {
+            background: linear-gradient(to right, #3b82f6 30%, #fbbf24 30% 40%, #3b82f6 40%);
+        }
+        
+        /* Metrics Overview */
+        .metrics-overview {
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-size: 2.4em;
+            color: #1f2937;
+            margin-bottom: 35px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 6px;
+            height: 40px;
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+            border-radius: 3px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            margin-bottom: 45px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #f3f4f6;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #f59e0b 0%, #dc2626 50%, #7c3aed 100%);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .metric-card.highlight {
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .metric-card h3 {
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        .metric-card.highlight h3 {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .metric-card .value {
+            font-size: 3.2em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #1f2937;
+        }
+        
+        .metric-card.highlight .value {
+            color: white;
+        }
+        
+        .metric-card .detail {
+            font-size: 1.05em;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        
+        .metric-card.highlight .detail {
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .metric-card .country-label {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        /* Charts Section */
+        .charts-section {
+            margin-bottom: 60px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(700px, 1fr));
+            gap: 40px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f3f4f6;
+        }
+        
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-container h3 {
+            font-size: 1.7em;
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 450px;
+        }
+        
+        .chart.tall {
+            height: 550px;
+        }
+        
+        .chart.extra-tall {
+            height: 650px;
+        }
+        
+        /* Performance Table */
+        .table-container {
+            background: white;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f3f4f6;
+            margin-bottom: 50px;
+            overflow-x: auto;
+        }
+        
+        .table-container h3 {
+            font-size: 1.7em;
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            color: #4b5563;
+            font-size: 0.95em;
+        }
+        
+        tr:hover {
+            background: #f9fafb;
+        }
+        
+        .country-cell {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .platform-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .platform-badge.tiktok {
+            background: #000000;
+            color: white;
+        }
+        
+        .platform-badge.youtube {
+            background: #ff0000;
+            color: white;
+        }
+        
+        .platform-badge.instagram {
+            background: linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%);
+            color: white;
+        }
+        
+        .performance-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .performance-high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .performance-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .performance-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Insights Section */
+        .insights-section {
+            margin-top: 60px;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 35px;
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            padding: 40px;
+            border-radius: 18px;
+            border: 2px solid #f59e0b;
+            transition: all 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -10px rgba(245, 158, 11, 0.3);
+        }
+        
+        .insight-card h4 {
+            font-size: 1.5em;
+            color: #92400e;
+            margin-bottom: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .insight-card .icon {
+            width: 40px;
+            height: 40px;
+            background: #f59e0b;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4em;
+        }
+        
+        .insight-card p {
+            color: #78350f;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1.08em;
+        }
+        
+        .insight-card .recommendation {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            border-left: 5px solid #f59e0b;
+            color: #451a03;
+            font-size: 0.98em;
+            line-height: 1.8;
+        }
+        
+        .insight-card .recommendation strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 70px;
+            text-align: center;
+            padding-top: 35px;
+            border-top: 2px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.95em;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2.8em;
+            }
+            
+            .charts-grid,
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart {
+                height: 350px;
+            }
+            
+            table {
+                font-size: 0.85em;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>SoundCore Regional Performance Analysis</h1>
+            <p>Cross-Country Social Media Intelligence Dashboard</p>
+            <div class="subtitle">Comprehensive Analysis: Poland, Norway & Sweden</div>
+            <div class="country-flags">
+                <div class="country-flag">
+                    <div class="flag flag-poland"></div>
+                    <span>Poland</span>
+                </div>
+                <div class="country-flag">
+                    <div class="flag flag-norway"></div>
+                    <span>Norway</span>
+                </div>
+                <div class="country-flag">
+                    <div class="flag flag-sweden"></div>
+                    <span>Sweden</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Key Metrics Overview -->
+        <div class="metrics-overview">
+            <h2 class="section-title">Executive Performance Summary</h2>
+            <div class="metrics-grid">
+                <div class="metric-card highlight">
+                    <h3>Total Content Volume</h3>
+                    <div class="value">1,423</div>
+                    <div class="detail">Posts across all platforms</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Views</h3>
+                    <div class="value">3.65M</div>
+                    <div class="detail">Combined reach across regions</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Engagement</h3>
+                    <div class="value">24.1K</div>
+                    <div class="detail">Likes, comments, saves, shares</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Poland Dominance</h3>
+                    <div class="value">79.8%</div>
+                    <div class="detail">Of total views</div>
+                    <span class="country-label">🏆 Leader</span>
+                </div>
+                <div class="metric-card">
+                    <h3>Best Platform</h3>
+                    <div class="value">TikTok</div>
+                    <div class="detail">68.5% of total views</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Avg Engagement Rate</h3>
+                    <div class="value">0.66%</div>
+                    <div class="detail">Across all content</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <h2 class="section-title">Multi-Dimensional Performance Analysis</h2>
+            <div class="charts-grid">
+                <!-- Country Performance Overview -->
+                <div class="chart-container full-width">
+                    <h3>Country Performance Comparison</h3>
+                    <div id="countryPerformanceChart" class="chart tall"></div>
+                </div>
+                
+                <!-- Platform Distribution by Country -->
+                <div class="chart-container">
+                    <h3>Platform Distribution by Country</h3>
+                    <div id="platformDistributionChart" class="chart"></div>
+                </div>
+                
+                <!-- Engagement Rate Analysis -->
+                <div class="chart-container">
+                    <h3>Engagement Rate Comparison</h3>
+                    <div id="engagementRateChart" class="chart"></div>
+                </div>
+                
+                <!-- Content Volume vs Performance -->
+                <div class="chart-container full-width">
+                    <h3>Content Volume vs Performance Matrix</h3>
+                    <div id="volumePerformanceChart" class="chart"></div>
+                </div>
+                
+                <!-- Platform Efficiency Radar -->
+                <div class="chart-container">
+                    <h3>Platform Efficiency by Country</h3>
+                    <div id="efficiencyRadarChart" class="chart"></div>
+                </div>
+                
+                <!-- Engagement Funnel -->
+                <div class="chart-container">
+                    <h3>Engagement Funnel Analysis</h3>
+                    <div id="engagementFunnelChart" class="chart"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Table -->
+        <div class="table-container">
+            <h3>Detailed Regional Performance Metrics</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Country</th>
+                        <th>Platform</th>
+                        <th>Content</th>
+                        <th>Total Views</th>
+                        <th>Avg Views/Post</th>
+                        <th>Total Likes</th>
+                        <th>Like Rate</th>
+                        <th>Comments</th>
+                        <th>Shares</th>
+                        <th>Engagement/Post</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="country-cell">Poland</td>
+                        <td><span class="platform-badge tiktok">TikTok</span></td>
+                        <td>230</td>
+                        <td>2,201,264</td>
+                        <td>9,566</td>
+                        <td>12,778</td>
+                        <td>0.58%</td>
+                        <td>261</td>
+                        <td>—</td>
+                        <td>56.79</td>
+                        <td><span class="performance-indicator performance-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Poland</td>
+                        <td><span class="platform-badge youtube">YouTube</span></td>
+                        <td>188</td>
+                        <td>649,324</td>
+                        <td>3,454</td>
+                        <td>2,679</td>
+                        <td>0.41%</td>
+                        <td>5</td>
+                        <td>—</td>
+                        <td>14.26</td>
+                        <td><span class="performance-indicator performance-medium">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Poland</td>
+                        <td><span class="platform-badge instagram">Instagram</span></td>
+                        <td>173</td>
+                        <td>49,343</td>
+                        <td>285</td>
+                        <td>185</td>
+                        <td>0.37%</td>
+                        <td>3</td>
+                        <td>—</td>
+                        <td>1.09</td>
+                        <td><span class="performance-indicator performance-low">Low</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Norway</td>
+                        <td><span class="platform-badge tiktok">TikTok</span></td>
+                        <td>122</td>
+                        <td>154,054</td>
+                        <td>1,263</td>
+                        <td>1,825</td>
+                        <td>1.18%</td>
+                        <td>33</td>
+                        <td>128</td>
+                        <td>16.13</td>
+                        <td><span class="performance-indicator performance-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Norway</td>
+                        <td><span class="platform-badge youtube">YouTube</span></td>
+                        <td>131</td>
+                        <td>200,352</td>
+                        <td>1,529</td>
+                        <td>780</td>
+                        <td>0.39%</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>5.98</td>
+                        <td><span class="performance-indicator performance-medium">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Norway</td>
+                        <td><span class="platform-badge instagram">Instagram</span></td>
+                        <td>118</td>
+                        <td>59,964</td>
+                        <td>508</td>
+                        <td>242</td>
+                        <td>0.40%</td>
+                        <td>2</td>
+                        <td>—</td>
+                        <td>2.07</td>
+                        <td><span class="performance-indicator performance-low">Low</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Sweden</td>
+                        <td><span class="platform-badge tiktok">TikTok</span></td>
+                        <td>127</td>
+                        <td>143,101</td>
+                        <td>1,126</td>
+                        <td>1,509</td>
+                        <td>1.05%</td>
+                        <td>26</td>
+                        <td>113</td>
+                        <td>13.94</td>
+                        <td><span class="performance-indicator performance-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Sweden</td>
+                        <td><span class="platform-badge youtube">YouTube</span></td>
+                        <td>148</td>
+                        <td>231,378</td>
+                        <td>1,564</td>
+                        <td>892</td>
+                        <td>0.39%</td>
+                        <td>6</td>
+                        <td>0</td>
+                        <td>6.06</td>
+                        <td><span class="performance-indicator performance-medium">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td class="country-cell">Sweden</td>
+                        <td><span class="platform-badge instagram">Instagram</span></td>
+                        <td>106</td>
+                        <td>16,525</td>
+                        <td>156</td>
+                        <td>77</td>
+                        <td>0.47%</td>
+                        <td>0</td>
+                        <td>—</td>
+                        <td>0.73</td>
+                        <td><span class="performance-indicator performance-low">Low</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Strategic Insights -->
+        <div class="insights-section">
+            <h2 class="section-title">Strategic Insights & Market Opportunities</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <h4>
+                        <span class="icon">🌍</span>
+                        Poland Market Dominance vs Nordic Engagement
+                    </h4>
+                    <p>Poland generates 79.8% of total views but has the lowest engagement rates. Norway and Sweden show 2x higher engagement rates despite 10x smaller audience reach, indicating different content consumption behaviors.</p>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation:</strong>
+                        Implement a dual-track strategy: Volume-focused approach for Poland to maximize reach, and engagement-focused content for Nordic markets. Test Polish high-volume content in Nordic markets but with engagement-driving elements (polls, questions, local references). Consider dedicated Nordic content creators who understand cultural nuances.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>
+                        <span class="icon">📱</span>
+                        TikTok Excellence vs Instagram Crisis
+                    </h4>
+                    <p>TikTok commands 68.5% of total views with highest engagement rates (0.58-1.18%). Instagram severely underperforms across all markets with <500 average views per post and minimal engagement.</p>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation:</strong>
+                        Pivot Instagram strategy entirely or consider platform exit. If maintaining presence, repurpose TikTok content as Reels with platform-specific adaptations. Allocate 80% of resources to TikTok, 15% to YouTube growth, and only 5% to Instagram experimentation. Track Instagram performance for 60 days post-pivot.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>
+                        <span class="icon">📊</span>
+                        Content Volume Inefficiency
+                    </h4>
+                    <p>1,423 total posts with 0.66% average engagement suggests content oversaturation. Poland's 591 posts generate strong views but poor engagement, while Nordic markets show better efficiency with fewer posts.</p>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation:</strong>
+                        Reduce content volume by 30-40% while improving quality. Implement a "less is more" approach: Poland (5-6 posts/week), Nordics (3-4 posts/week). Focus on high-production value content with clear CTAs. Use saved resources for community management and engagement initiatives.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>
+                        <span class="icon">💡</span>
+                        YouTube Untapped Potential
+                    </h4>
+                    <p>YouTube shows consistent 1,500+ average views across all markets but near-zero engagement (0.39-0.41% like rate, almost no comments). This indicates passive viewing without community building.</p>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation:</strong>
+                        Transform YouTube from passive viewing to active community. Implement YouTube Shorts strategy with TikTok repurposing. Add clear verbal CTAs in videos, create comment-driven content series, and use Community tab for polls. Consider longer-form content (3-5 min) for product deep-dives to differentiate from TikTok.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>
+                        <span class="icon">🎯</span>
+                        Regional Content Localization Gap
+                    </h4>
+                    <p>Significant performance variations between markets suggest one-size-fits-all content strategy. Nordic markets' higher engagement rates indicate appetite for more targeted, culturally relevant content.</p>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation:</strong>
+                        Develop market-specific content calendars: Poland (tech specs, price comparisons, volume deals), Norway (sustainability, outdoor use cases, premium features), Sweden (design aesthetics, minimalism, smart home integration). Create local language captions and collaborate with micro-influencers who understand cultural contexts.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>
+                        <span class="icon">📈</span>
+                        Engagement Rate Optimization
+                    </h4>
+                    <p>Overall 0.66% engagement rate is below industry standards (1-3%). Norway and Sweden show potential with 1%+ rates on TikTok, while Poland lags at 0.58% despite massive reach.</p>
+                    <div class="recommendation">
+                        <strong>Strategic Recommendation:</strong>
+                        Launch 90-day engagement improvement program: A/B test content formats (tutorials vs unboxing vs lifestyle), optimize posting times based on audience activity, implement consistent hashtag strategies by market, create region-specific challenges/contests. Set target: Poland 1%, Nordics 2% engagement rate.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Dashboard generated on <span id="currentDate"></span> | Data Analysis: Regional Performance Metrics | SoundCore International</p>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        // Color schemes
+        const colors = {
+            poland: '#dc2626',
+            norway: '#3b82f6',
+            sweden: '#fbbf24',
+            tiktok: '#000000',
+            youtube: '#ff0000',
+            instagram: '#e4405f',
+            primary: '#f59e0b',
+            secondary: '#dc2626',
+            tertiary: '#7c3aed'
+        };
+        
+        // Country Performance Comparison Chart
+        const countryPerformanceChart = echarts.init(document.getElementById('countryPerformanceChart'));
+        const countryPerformanceOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: function(params) {
+                    let tooltip = params[0].name + '<br/>';
+                    params.forEach(param => {
+                        tooltip += param.marker + ' ' + param.seriesName + ': ' + param.value.toLocaleString() + '<br/>';
+                    });
+                    return tooltip;
+                }
+            },
+            legend: {
+                data: ['TikTok', 'YouTube', 'Instagram'],
+                top: 10
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Poland\nViews', 'Poland\nLikes', 'Poland\nEngagement', 
+                       'Norway\nViews', 'Norway\nLikes', 'Norway\nEngagement',
+                       'Sweden\nViews', 'Sweden\nLikes', 'Sweden\nEngagement'],
+                axisLabel: {
+                    rotate: 45,
+                    interval: 0
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Count',
+                axisLabel: {
+                    formatter: function(value) {
+                        if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                        if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                        return value;
+                    }
+                }
+            },
+            series: [
+                {
+                    name: 'TikTok',
+                    type: 'bar',
+                    data: [2201264, 12778, 13039, 154054, 1825, 2019, 143101, 1509, 1674],
+                    itemStyle: { color: colors.tiktok }
+                },
+                {
+                    name: 'YouTube',
+                    type: 'bar',
+                    data: [649324, 2679, 2684, 200352, 780, 782, 231378, 892, 898],
+                    itemStyle: { color: colors.youtube }
+                },
+                {
+                    name: 'Instagram',
+                    type: 'bar',
+                    data: [49343, 185, 188, 59964, 242, 244, 16525, 77, 77],
+                    itemStyle: { color: colors.instagram }
+                }
+            ]
+        };
+        countryPerformanceChart.setOption(countryPerformanceOption);
+        
+        // Platform Distribution by Country
+        const platformDistributionChart = echarts.init(document.getElementById('platformDistributionChart'));
+        const platformDistributionOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                bottom: 10,
+                left: 'center'
+            },
+            series: [
+                {
+                    name: 'Poland',
+                    type: 'pie',
+                    radius: ['20%', '40%'],
+                    center: ['25%', '50%'],
+                    data: [
+                        { value: 2201264, name: 'TikTok', itemStyle: { color: colors.tiktok } },
+                        { value: 649324, name: 'YouTube', itemStyle: { color: colors.youtube } },
+                        { value: 49343, name: 'Instagram', itemStyle: { color: colors.instagram } }
+                    ],
+                    label: {
+                        position: 'outer',
+                        formatter: '{b}\n{d}%'
+                    }
+                },
+                {
+                    name: 'Norway',
+                    type: 'pie',
+                    radius: ['20%', '40%'],
+                    center: ['50%', '50%'],
+                    data: [
+                        { value: 154054, name: 'TikTok', itemStyle: { color: colors.tiktok } },
+                        { value: 200352, name: 'YouTube', itemStyle: { color: colors.youtube } },
+                        { value: 59964, name: 'Instagram', itemStyle: { color: colors.instagram } }
+                    ],
+                    label: {
+                        position: 'outer',
+                        formatter: '{b}\n{d}%'
+                    }
+                },
+                {
+                    name: 'Sweden',
+                    type: 'pie',
+                    radius: ['20%', '40%'],
+                    center: ['75%', '50%'],
+                    data: [
+                        { value: 143101, name: 'TikTok', itemStyle: { color: colors.tiktok } },
+                        { value: 231378, name: 'YouTube', itemStyle: { color: colors.youtube } },
+                        { value: 16525, name: 'Instagram', itemStyle: { color: colors.instagram } }
+                    ],
+                    label: {
+                        position: 'outer',
+                        formatter: '{b}\n{d}%'
+                    }
+                }
+            ]
+        };
+        platformDistributionChart.setOption(platformDistributionOption);
+        
+        // Engagement Rate Comparison
+        const engagementRateChart = echarts.init(document.getElementById('engagementRateChart'));
+        const engagementRateOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                formatter: function(params) {
+                    let tooltip = params[0].name + '<br/>';
+                    params.forEach(param => {
+                        tooltip += param.marker + ' ' + param.seriesName + ': ' + param.value.toFixed(2) + '%<br/>';
+                    });
+                    return tooltip;
+                }
+            },
+            legend: {
+                data: ['Like Rate', 'Comment Rate', 'Share Rate'],
+                top: 10
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                data: ['Poland\nTikTok', 'Poland\nYouTube', 'Poland\nInstagram',
+                       'Norway\nTikTok', 'Norway\nYouTube', 'Norway\nInstagram',
+                       'Sweden\nTikTok', 'Sweden\nYouTube', 'Sweden\nInstagram'],
+                axisLabel: {
+                    rotate: 45,
+                    interval: 0
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Rate (%)',
+                axisLabel: {
+                    formatter: '{value}%'
+                }
+            },
+            series: [
+                {
+                    name: 'Like Rate',
+                    type: 'bar',
+                    data: [0.58, 0.41, 0.37, 1.18, 0.39, 0.40, 1.05, 0.39, 0.47],
+                    itemStyle: { color: colors.primary }
+                },
+                {
+                    name: 'Comment Rate',
+                    type: 'bar',
+                    data: [0.012, 0.0008, 0.006, 0.021, 0.001, 0.003, 0.018, 0.003, 0],
+                    itemStyle: { color: colors.secondary }
+                },
+                {
+                    name: 'Share Rate',
+                    type: 'bar',
+                    data: [0, 0, 0, 0.083, 0, 0, 0.079, 0, 0],
+                    itemStyle: { color: colors.tertiary }
+                }
+            ]
+        };
+        engagementRateChart.setOption(engagementRateOption);
+        
+        // Content Volume vs Performance Matrix
+        const volumePerformanceChart = echarts.init(document.getElementById('volumePerformanceChart'));
+        const volumePerformanceOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: function(params) {
+                    return params.data[3] + '<br/>' +
+                           'Content: ' + params.data[0] + ' posts<br/>' +
+                           'Avg Views: ' + params.data[1].toLocaleString() + '<br/>' +
+                           'Total Views: ' + params.data[2].toLocaleString();
+                }
+            },
+            grid: {
+                left: '5%',
+                right: '5%',
+                bottom: '10%',
+                top: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                name: 'Content Volume',
+                nameLocation: 'middle',
+                nameGap: 30,
+                splitLine: {
+                    lineStyle: {
+                        type: 'dashed'
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Average Views per Post',
+                nameLocation: 'middle',
+                nameGap: 50,
+                splitLine: {
+                    lineStyle: {
+                        type: 'dashed'
+                    }
+                }
+            },
+            series: [{
+                type: 'scatter',
+                symbolSize: function (val) {
+                    return Math.sqrt(val[2]) / 50;
+                },
+                data: [
+                    [230, 9566, 2201264, 'Poland TikTok'],
+                    [188, 3454, 649324, 'Poland YouTube'],
+                    [173, 285, 49343, 'Poland Instagram'],
+                    [122, 1263, 154054, 'Norway TikTok'],
+                    [131, 1529, 200352, 'Norway YouTube'],
+                    [118, 508, 59964, 'Norway Instagram'],
+                    [127, 1126, 143101, 'Sweden TikTok'],
+                    [148, 1564, 231378, 'Sweden YouTube'],
+                    [106, 156, 16525, 'Sweden Instagram']
+                ],
+                itemStyle: {
+                    color: function(params) {
+                        if (params.data[3].includes('Poland')) return colors.poland;
+                        if (params.data[3].includes('Norway')) return colors.norway;
+                        if (params.data[3].includes('Sweden')) return colors.sweden;
+                    },
+                    opacity: 0.8
+                },
+                emphasis: {
+                    itemStyle: {
+                        borderColor: '#333',
+                        borderWidth: 2,
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowOffsetY: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }]
+        };
+        volumePerformanceChart.setOption(volumePerformanceOption);
+        
+        // Platform Efficiency Radar
+        const efficiencyRadarChart = echarts.init(document.getElementById('efficiencyRadarChart'));
+        const efficiencyRadarOption = {
+            tooltip: {},
+            legend: {
+                data: ['Poland', 'Norway', 'Sweden'],
+                bottom: 10
+            },
+            radar: {
+                indicator: [
+                    { name: 'TikTok Views/Post', max: 10000 },
+                    { name: 'YouTube Views/Post', max: 4000 },
+                    { name: 'Instagram Views/Post', max: 600 },
+                    { name: 'TikTok Engagement', max: 60 },
+                    { name: 'YouTube Engagement', max: 20 },
+                    { name: 'Instagram Engagement', max: 3 }
+                ]
+            },
+            series: [{
+                type: 'radar',
+                data: [
+                    {
+                        value: [9566, 3454, 285, 56.79, 14.26, 1.09],
+                        name: 'Poland',
+                        itemStyle: { color: colors.poland },
+                        areaStyle: { opacity: 0.3 }
+                    },
+                    {
+                        value: [1263, 1529, 508, 16.13, 5.98, 2.07],
+                        name: 'Norway',
+                        itemStyle: { color: colors.norway },
+                        areaStyle: { opacity: 0.3 }
+                    },
+                    {
+                        value: [1126, 1564, 156, 13.94, 6.06, 0.73],
+                        name: 'Sweden',
+                        itemStyle: { color: colors.sweden },
+                        areaStyle: { opacity: 0.3 }
+                    }
+                ]
+            }]
+        };
+        efficiencyRadarChart.setOption(efficiencyRadarOption);
+        
+        // Engagement Funnel
+        const engagementFunnelChart = echarts.init(document.getElementById('engagementFunnelChart'));
+        const engagementFunnelOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c}'
+            },
+            legend: {
+                data: ['Poland', 'Norway', 'Sweden'],
+                bottom: 10
+            },
+            series: [
+                {
+                    name: 'Poland',
+                    type: 'funnel',
+                    left: '5%',
+                    width: '30%',
+                    label: {
+                        position: 'left'
+                    },
+                    data: [
+                        { value: 2899931, name: 'Views' },
+                        { value: 15642, name: 'Likes' },
+                        { value: 269, name: 'Comments' }
+                    ],
+                    itemStyle: { color: colors.poland }
+                },
+                {
+                    name: 'Norway',
+                    type: 'funnel',
+                    left: '35%',
+                    width: '30%',
+                    label: {
+                        position: 'inside'
+                    },
+                    data: [
+                        { value: 414370, name: 'Views' },
+                        { value: 2847, name: 'Likes' },
+                        { value: 37, name: 'Comments' }
+                    ],
+                    itemStyle: { color: colors.norway }
+                },
+                {
+                    name: 'Sweden',
+                    type: 'funnel',
+                    left: '65%',
+                    width: '30%',
+                    label: {
+                        position: 'right'
+                    },
+                    data: [
+                        { value: 391004, name: 'Views' },
+                        { value: 2478, name: 'Likes' },
+                        { value: 32, name: 'Comments' }
+                    ],
+                    itemStyle: { color: colors.sweden }
+                }
+            ]
+        };
+        engagementFunnelChart.setOption(engagementFunnelOption);
+        
+        // Make charts responsive
+        window.addEventListener('resize', () => {
+            countryPerformanceChart.resize();
+            platformDistributionChart.resize();
+            engagementRateChart.resize();
+            volumePerformanceChart.resize();
+            efficiencyRadarChart.resize();
+            engagementFunnelChart.resize();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Keyword Analysis Dashboard</title>
+    <!-- ECharts library -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Use the Inter font family defined in the head */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* A slightly lighter gray */
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Brand Keyword Analysis</h1>
+            <p class="text-lg text-gray-600 mt-2">Eufy vs. Soundcore in Poland & Nordics Markets</p>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column: KPIs and Category Analysis -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- KPI Cards -->
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Key Metrics</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                            <span class="font-medium text-blue-800">Total Keywords Analyzed</span>
+                            <span id="totalKeywords" class="text-2xl font-bold text-blue-900"></span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                            <span class="font-medium text-green-800">Eufy's Top Category</span>
+                            <span id="eufyTopCategory" class="text-xl font-bold text-green-900"></span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-purple-50 rounded-lg">
+                            <span class="font-medium text-purple-800">Soundcore's Top Category</span>
+                            <span id="soundcoreTopCategory" class="text-xl font-bold text-purple-900"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Category Distribution Chart -->
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold">Product Category Distribution</h2>
+                    <div id="categoryChart" style="width: 100%; height: 300px;"></div>
+                    <div class="mt-4 text-sm text-gray-700">
+                        <h3 class="font-semibold text-base mb-2">Insights & Recommendations</h3>
+                        <p class="mb-2"><strong>Insight:</strong> Eufy's search interest is overwhelmingly dominated by 'Vacuum' products. In contrast, Soundcore is almost exclusively associated with 'Audio' products like earbuds and headphones.</p>
+                        <p><strong>Recommendation:</strong> Eufy could leverage its strong vacuum brand recognition to introduce other smart home products. Soundcore should continue to solidify its position as a leading audio brand, perhaps by highlighting premium features like ANC and Hi-Res audio in marketing campaigns.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Regional Analysis and Keyword Table -->
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <!-- Regional Keyword Volume Chart -->
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold">Keyword Volume by Brand & Region</h2>
+                    <div id="regionalVolumeChart" style="width: 100%; height: 400px;"></div>
+                     <div class="mt-4 text-sm text-gray-700">
+                        <h3 class="font-semibold text-base mb-2">Insights & Recommendations</h3>
+                        <p class="mb-2"><strong>Insight:</strong> Both brands show a higher volume of diverse search keywords in the Nordics compared to Poland, suggesting a more mature or varied market. Eufy has a stronger keyword presence in the Nordics than Soundcore.</p>
+                        <p><strong>Recommendation:</strong> For Poland, focus on core product marketing to build foundational brand awareness. For the Nordics, consider more niche marketing campaigns targeting specific product features (e.g., "eufy floor washer", "soundcore liberty 5") to capture long-tail search traffic.</p>
+                    </div>
+                </div>
+
+                <!-- Keyword Details Table -->
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Top 5 Keywords by Segment</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="keywordLists">
+                        <!-- Keyword lists will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Data based on the provided image ---
+            const keywordData = {
+                eufy_poland: ['eufy robot vacuum', 'eufy robovac', 'eufy vacuum', 'eufy robovac 11s', 'eufy cleaner', 'eufy robot', 'eufy robot cleaner', 'eufy robot sprzątający', 'eufy roboty sprzątające', 'eufy E28', 'eufy E25', 'eufy robot vacuum E28', 'eufy robot vacuum E25'],
+                eufy_nordics: ['eufy X10 Pro', 'anker vacuum', 'roborock eufy', 'eufy cordless vacuum cleaners', 'eufy clean website', 'eufy robovac', 'eufy robot E28', 'eufy Robot E25', 'anker roomba', 'eufy robot vacuum', 'anker eufy', 'eufy cleaner', '"Góra rent"', 'eufy Clean robot', 'eufy x10 pro omni', 'eufy by Anker', '"eufy EU"', 'eufy floor washer', '"best robot vacuum brands 2024"', 'enty Nordic', 'eufl', 'eufy robovac l70 hybrid', 'eufy robot vacuum E28', 'eufy vacuum accessories'],
+                soundcore_poland: ['anker bluetooth earbuds', 'anker bluetooth earphones', 'anker bluetooth headphones', 'anker earphones', 'anker headset', 'anker noise cancelling headphones', 'anker soundcore earbud', 'anker soundcore earbuds', 'anker wireless earphones', 'anker wireless headphones', 'best anker earbuds', 'Soundcore', 'Soundcore ANC headphone', 'soundcore bluetooth earbuds', 'soundcore earbud', 'soundcore earphones', 'Soundcore Earphones', 'soundcore true wireless earbud', 'Anker sleep a20', 'soundcore sleep a20', 'soundcore Liberty 5', 'soundcore boom3l'],
+                soundcore_nordics: ['anker sleep A20', 'ankersoundcore', 'anker soundcore liberty', 'anker soundcore speaker', 'best soundcore earbuds', 'buy soundcore speaker', 'sleep A20', 'soundcore a20', 'soundcore bluetooth speaker', 'soundcore bluetooth speaker', 'soundcore boom', 'soundcore discount code', 'soundcore headphones', 'soundcore sleep a20', 'soundcore sleep A20', 'soundcore sleep earbuds', 'soundcorebest ear buds', 'soundcore speaker bluetooth']
+            };
+
+            // --- Helper function to categorize keywords ---
+            const categorizeKeyword = (keyword) => {
+                keyword = keyword.toLowerCase();
+                if (keyword.includes('vacuum') || keyword.includes('robovac') || keyword.includes('cleaner') || keyword.includes('roomba') || keyword.includes('robot')) return 'Vacuum';
+                if (keyword.includes('earbud') || keyword.includes('earphone') || keyword.includes('headphone') || keyword.includes('audio') || keyword.includes('soundcore') || keyword.includes('speaker') || keyword.includes('boom') || keyword.includes('liberty')) return 'Audio';
+                if (keyword.includes('security') || keyword.includes('cam')) return 'Security';
+                return 'General';
+            };
+
+            // --- Process data for charts and KPIs ---
+            let totalKeywords = 0;
+            const categoryCounts = { 'Vacuum': 0, 'Audio': 0, 'Security': 0, 'General': 0 };
+            const eufyCategories = { 'Vacuum': 0, 'Audio': 0, 'Security': 0, 'General': 0 };
+            const soundcoreCategories = { 'Vacuum': 0, 'Audio': 0, 'Security': 0, 'General': 0 };
+            
+            for (const key in keywordData) {
+                totalKeywords += keywordData[key].length;
+                keywordData[key].forEach(kw => {
+                    const category = categorizeKeyword(kw);
+                    categoryCounts[category]++;
+                    if (key.startsWith('eufy')) {
+                        eufyCategories[category]++;
+                    } else if (key.startsWith('soundcore')) {
+                        soundcoreCategories[category]++;
+                    }
+                });
+            }
+
+            // --- 1. Update KPI Cards ---
+            document.getElementById('totalKeywords').textContent = totalKeywords;
+            document.getElementById('eufyTopCategory').textContent = Object.keys(eufyCategories).reduce((a, b) => eufyCategories[a] > eufyCategories[b] ? a : b);
+            document.getElementById('soundcoreTopCategory').textContent = Object.keys(soundcoreCategories).reduce((a, b) => soundcoreCategories[a] > soundcoreCategories[b] ? a : b);
+
+            // --- 2. Initialize Category Distribution Chart (Pie Chart) ---
+            const categoryChart = echarts.init(document.getElementById('categoryChart'));
+            const categoryOption = {
+                tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    top: 'center',
+                    textStyle: { color: '#374151' }
+                },
+                series: [{
+                    name: 'Product Category',
+                    type: 'pie',
+                    radius: ['50%', '80%'],
+                    avoidLabelOverlap: false,
+                    label: { show: false },
+                    emphasis: {
+                        label: { show: true, fontSize: '16', fontWeight: 'bold' }
+                    },
+                    data: Object.keys(categoryCounts).map(key => ({
+                        value: categoryCounts[key],
+                        name: key
+                    })),
+                }],
+                color: ['#3b82f6', '#8b5cf6', '#10b981', '#f97316']
+            };
+            categoryChart.setOption(categoryOption);
+
+            // --- 3. Initialize Regional Volume Chart (Bar Chart) ---
+            const regionalVolumeChart = echarts.init(document.getElementById('regionalVolumeChart'));
+            const regionalOption = {
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['Eufy Poland', 'Eufy Nordics', 'Soundcore Poland', 'Soundcore Nordics'],
+                    axisLabel: { color: '#4b5563' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#4b5563' }
+                },
+                series: [{
+                    name: 'Keyword Count',
+                    type: 'bar',
+                    barWidth: '60%',
+                    data: [
+                        { value: keywordData.eufy_poland.length, itemStyle: { color: '#3b82f6' } },
+                        { value: keywordData.eufy_nordics.length, itemStyle: { color: '#60a5fa' } },
+                        { value: keywordData.soundcore_poland.length, itemStyle: { color: '#8b5cf6' } },
+                        { value: keywordData.soundcore_nordics.length, itemStyle: { color: '#a78bfa' } }
+                    ]
+                }]
+            };
+            regionalVolumeChart.setOption(regionalOption);
+            
+            // --- 4. Populate Top 5 Keyword Lists ---
+            const keywordListsContainer = document.getElementById('keywordLists');
+            const segments = {
+                'Eufy - Poland': keywordData.eufy_poland,
+                'Eufy - Nordics': keywordData.eufy_nordics,
+                'Soundcore - Poland': keywordData.soundcore_poland,
+                'Soundcore - Nordics': keywordData.soundcore_nordics
+            };
+
+            for (const segmentName in segments) {
+                const listContainer = document.createElement('div');
+                let listHTML = `<h3 class="font-semibold text-lg mb-2 text-gray-800">${segmentName}</h3><ul class="space-y-2">`;
+                segments[segmentName].slice(0, 5).forEach(kw => {
+                    listHTML += `<li class="text-sm bg-gray-100 p-2 rounded-md text-gray-700">${kw}</li>`;
+                });
+                listHTML += '</ul>';
+                listContainer.innerHTML = listHTML;
+                keywordListsContainer.appendChild(listContainer);
+            }
+
+            // --- Resize charts on window resize ---
+            window.addEventListener('resize', () => {
+                categoryChart.resize();
+                regionalVolumeChart.resize();
+            });
+        });
+    </script>
+</body>
+</html>

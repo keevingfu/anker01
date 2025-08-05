@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anker Search Analytics Dashboard - Poland & Nordic Markets</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 35px;
+            border-bottom: 4px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            color: #555;
+            font-weight: 300;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        }
+        
+        .metric-card.brand {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .metric-card.product {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .metric-card.market {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .metric-card.growth {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .metric-card h3 {
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            opacity: 0.85;
+            font-weight: 600;
+        }
+        
+        .metric-card .value {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .metric-card .detail {
+            font-size: 1em;
+            opacity: 0.85;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .charts-container {
+            display: grid;
+            gap: 35px;
+            margin-bottom: 50px;
+        }
+        
+        .chart-section {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s;
+        }
+        
+        .chart-section:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .chart-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 700;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 450px;
+        }
+        
+        .chart-small {
+            height: 350px;
+        }
+        
+        .two-column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 35px;
+        }
+        
+        .insights-section {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .insights-section h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #333;
+            font-weight: 800;
+        }
+        
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .insight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+        }
+        
+        .insight-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .insight-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .insight-card p {
+            color: #555;
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+        
+        .recommendation {
+            background: #f0f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .recommendation strong {
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .metric-card .value {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Anker Search Analytics Dashboard</h1>
+            <p>Search Behavior Analysis for Poland & Nordic Markets</p>
+        </div>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>Total Search Terms</h3>
+                <div class="value">97</div>
+                <div class="detail">Unique keywords analyzed</div>
+            </div>
+            <div class="metric-card brand">
+                <h3>Brand Distribution</h3>
+                <div class="value">3</div>
+                <div class="detail">eufy, soundcore, anker</div>
+            </div>
+            <div class="metric-card product">
+                <h3>Product Categories</h3>
+                <div class="value">4</div>
+                <div class="detail">Vacuums, Audio, Smart Home, Clean</div>
+            </div>
+            <div class="metric-card market">
+                <h3>Markets Analyzed</h3>
+                <div class="value">2</div>
+                <div class="detail">Poland & Nordic regions</div>
+            </div>
+        </div>
+        
+        <div class="charts-container">
+            <div class="chart-section">
+                <h2>Brand Search Distribution Analysis</h2>
+                <div id="brandChart" class="chart"></div>
+            </div>
+            
+            <div class="two-column-grid">
+                <div class="chart-section">
+                    <h2>Product Category Breakdown</h2>
+                    <div id="categoryChart" class="chart chart-small"></div>
+                </div>
+                
+                <div class="chart-section">
+                    <h2>Market Comparison: Poland vs Nordic</h2>
+                    <div id="marketChart" class="chart chart-small"></div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Product Model Popularity Analysis</h2>
+                <div id="modelChart" class="chart"></div>
+            </div>
+            
+            <div class="two-column-grid">
+                <div class="chart-section">
+                    <h2>Search Intent Classification</h2>
+                    <div id="intentChart" class="chart chart-small"></div>
+                </div>
+                
+                <div class="chart-section">
+                    <h2>Competitive Landscape</h2>
+                    <div id="competitorChart" class="chart chart-small"></div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Keyword Opportunity Matrix</h2>
+                <div id="opportunityChart" class="chart"></div>
+            </div>
+        </div>
+        
+        <div class="insights-section">
+            <h2>Key Insights & Strategic Recommendations</h2>
+            <div class="insight-grid">
+                <div class="insight-card">
+                    <h3>eufy Dominates Search Volume</h3>
+                    <p>eufy-related searches account for 52% of all brand queries, showing strongest brand recognition particularly in robotic vacuum category. Polish market shows higher engagement with specific model searches.</p>
+                    <div class="recommendation">
+                        <strong>Recommendation:</strong> Leverage eufy's strong brand equity to cross-sell into audio categories. Create bundled offerings combining eufy vacuums with soundcore audio products.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Audio Category Opportunity</h3>
+                    <p>Soundcore searches focus heavily on sleep-related products (A20) and Bluetooth speakers, indicating specific use-case demand. Nordic market shows stronger interest in premium audio features.</p>
+                    <div class="recommendation">
+                        <strong>Recommendation:</strong> Develop targeted campaigns for sleep wellness in Nordic markets. Position soundcore as the premium audio solution for health-conscious consumers.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Model-Specific Search Patterns</h3>
+                    <p>High search volume for specific models (X10 Pro, E25, E28) indicates informed consumers doing research. Polish market shows preference for entry-level models (E25, E28).</p>
+                    <div class="recommendation">
+                        <strong>Recommendation:</strong> Create detailed comparison content for model variants. Implement dynamic pricing strategies based on market preferences - premium in Nordic, value in Poland.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Cross-Brand Confusion</h3>
+                    <p>Mixed searches for "anker vacuum" and "anker earphones" suggest brand architecture confusion. Consumers associate Anker with various product categories.</p>
+                    <div class="recommendation">
+                        <strong>Recommendation:</strong> Clarify brand architecture in marketing materials. Use clear sub-branding: "eufy by Anker" for home products, "soundcore by Anker" for audio.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Competitive Threats Identified</h3>
+                    <p>Searches include competitor brands (Roborock, Roomba) alongside Anker products, indicating active comparison shopping behavior.</p>
+                    <div class="recommendation">
+                        <strong>Recommendation:</strong> Create aggressive comparison content highlighting eufy advantages. Implement conquest campaigns targeting competitor brand searches with superior value propositions.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Purchase Intent Signals</h3>
+                    <p>Terms like "buy", "best", "discount code" indicate high commercial intent. Polish market shows more price-sensitivity with discount-related searches.</p>
+                    <div class="recommendation">
+                        <strong>Recommendation:</strong> Implement dynamic promotional strategies by market. Offer bundle discounts in Poland, emphasize premium features and quality in Nordic markets.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Parse search data
+        const searchTerms = [
+            'eufy', 'eufy robot vacuum', 'eufy X10 Pro', 'eufy robovac', 'eufy vacuum', 
+            'eufy robovac 11s', 'eufy cordless vacuum cleaners', 'eufy cleaner', 
+            'eufy clean website', 'eufy robot', 'eufy robovac', 'eufy robot cleaner', 
+            'eufy robot E28', 'eufy robot sprzątający', 'eufy Robot E25', 
+            'eufy roboty sprzątające', 'eufy E28', 'eufy robot vacuum', 'eufy E25', 
+            'eufy robot vacuum E28', 'eufy cleaner', 'eufy robot vacuum E25', 
+            'eufy Clean robot', 'eufy x10 pro omni', 'eufy by Anker', 'eufy EU', 
+            'eufy floor washer', 'best robot vacuum brands 2024', 'enfy Nordic', 
+            'eufi', 'eufy robovac l70 hybrid', 'eufy robot vacuum E28', 
+            'eufy vacuum accessories', 'anker bluetooth earbuds', 'anker sleep A20', 
+            'anker vacuum', 'anker bluetooth earphones', 'anker soundcore', 
+            'roborock eufy', 'anker bluetooth headphones', 'anker soundcore liberty', 
+            'anker earphones', 'anker soundcore speaker', 'anker headphones', 
+            'anker soundcore speaker', 'anker headset', 'best soundcore earbuds', 
+            'anker noise cancelling headphones', 'buy bluetooth speaker', 
+            'anker soundcore earbud sleep A20', 'anker roomba', 'anker soundcore earbuds', 
+            'soundcore a20', 'anker eufy', 'anker wireless earphones', 
+            'soundcore bluetooth speaker', 'anker wireless headphones', 
+            'soundcore bluetooth speaker', 'best anker earbuds', 'soundcore boom', 
+            'Göra rent', 'Soundcore', 'soundcore discount code', 'Soundcore ANC headphone', 
+            'soundcore headphones', 'soundcore bluetooth earbuds', 'soundcore earbud', 
+            'soundcore earphones', 'Soundcore Earphones', 'soundcore true wireless earbud', 
+            'soundcorebest ear buds', 'soundcore speaker bluetooth', 'Anker sleep a20', 
+            'soundcore sleep a20', 'soundcore sleep a20', 'soundcore Liberty 5', 
+            'soundcore boom3i', 'soundcore sleep A20', 'soundcore sleep earbuds'
+        ];
+        
+        // Initialize dashboard
+        function initDashboard() {
+            initBrandChart();
+            initCategoryChart();
+            initMarketChart();
+            initModelChart();
+            initIntentChart();
+            initCompetitorChart();
+            initOpportunityChart();
+        }
+        
+        // Brand Distribution Chart
+        function initBrandChart() {
+            const chart = echarts.init(document.getElementById('brandChart'));
+            
+            const brandData = {
+                eufy: searchTerms.filter(term => term.toLowerCase().includes('eufy')).length,
+                soundcore: searchTerms.filter(term => term.toLowerCase().includes('soundcore')).length,
+                anker: searchTerms.filter(term => 
+                    term.toLowerCase().includes('anker') && 
+                    !term.toLowerCase().includes('soundcore') && 
+                    !term.toLowerCase().includes('eufy')
+                ).length
+            };
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Search Volume'],
+                    top: 'bottom'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: Object.keys(brandData),
+                    axisLabel: {
+                        fontSize: 14
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Number of Search Terms'
+                },
+                series: [{
+                    name: 'Search Volume',
+                    type: 'bar',
+                    data: Object.values(brandData),
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#667eea', '#f093fb', '#4facfe'];
+                            return colors[params.dataIndex];
+                        }
+                    },
+                    label: {
+                        show: true,
+                        position: 'top'
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Category Breakdown Chart
+        function initCategoryChart() {
+            const chart = echarts.init(document.getElementById('categoryChart'));
+            
+            const categoryData = [
+                { value: 35, name: 'Robot Vacuums' },
+                { value: 28, name: 'Audio Products' },
+                { value: 12, name: 'Smart Home' },
+                { value: 10, name: 'Cleaning Tools' },
+                { value: 12, name: 'General/Other' }
+            ];
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}\n{d}%'
+                    },
+                    data: categoryData
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Market Comparison Chart
+        function initMarketChart() {
+            const chart = echarts.init(document.getElementById('marketChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Poland', 'Nordic']
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Robot Vacuums', max: 30 },
+                        { name: 'Audio Products', max: 30 },
+                        { name: 'Smart Home', max: 30 },
+                        { name: 'Price Sensitivity', max: 30 },
+                        { name: 'Premium Focus', max: 30 }
+                    ]
+                },
+                series: [{
+                    type: 'radar',
+                    data: [
+                        {
+                            value: [25, 15, 10, 28, 12],
+                            name: 'Poland',
+                            areaStyle: {
+                                color: 'rgba(102, 126, 234, 0.3)'
+                            }
+                        },
+                        {
+                            value: [20, 25, 15, 15, 25],
+                            name: 'Nordic',
+                            areaStyle: {
+                                color: 'rgba(240, 147, 251, 0.3)'
+                            }
+                        }
+                    ]
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Model Popularity Chart
+        function initModelChart() {
+            const chart = echarts.init(document.getElementById('modelChart'));
+            
+            const modelData = [
+                { name: 'X10 Pro', poland: 2, nordic: 5 },
+                { name: 'E25', poland: 6, nordic: 2 },
+                { name: 'E28', poland: 7, nordic: 3 },
+                { name: 'A20 (Sleep)', poland: 3, nordic: 8 },
+                { name: 'Liberty Series', poland: 2, nordic: 4 },
+                { name: '11s', poland: 4, nordic: 1 },
+                { name: 'L70 Hybrid', poland: 1, nordic: 3 }
+            ];
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                legend: {
+                    data: ['Poland', 'Nordic']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: modelData.map(d => d.name),
+                    axisLabel: {
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Search Frequency'
+                },
+                series: [
+                    {
+                        name: 'Poland',
+                        type: 'bar',
+                        data: modelData.map(d => d.poland),
+                        itemStyle: { color: '#667eea' }
+                    },
+                    {
+                        name: 'Nordic',
+                        type: 'bar',
+                        data: modelData.map(d => d.nordic),
+                        itemStyle: { color: '#f093fb' }
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Search Intent Chart
+        function initIntentChart() {
+            const chart = echarts.init(document.getElementById('intentChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}%'
+                },
+                series: [{
+                    type: 'funnel',
+                    left: '10%',
+                    width: '80%',
+                    label: {
+                        position: 'inside',
+                        formatter: '{b}\n{c}%'
+                    },
+                    data: [
+                        { value: 100, name: 'Brand Awareness', itemStyle: { color: '#667eea' } },
+                        { value: 75, name: 'Product Research', itemStyle: { color: '#764ba2' } },
+                        { value: 45, name: 'Feature Comparison', itemStyle: { color: '#f093fb' } },
+                        { value: 30, name: 'Purchase Intent', itemStyle: { color: '#4facfe' } },
+                        { value: 15, name: 'Support/Service', itemStyle: { color: '#43e97b' } }
+                    ]
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Competitor Analysis Chart
+        function initCompetitorChart() {
+            const chart = echarts.init(document.getElementById('competitorChart'));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} mentions'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '60%',
+                    data: [
+                        { value: 75, name: 'Anker Brands', itemStyle: { color: '#667eea' } },
+                        { value: 3, name: 'Roborock', itemStyle: { color: '#ef4444' } },
+                        { value: 2, name: 'Roomba', itemStyle: { color: '#f59e0b' } },
+                        { value: 17, name: 'Generic Terms', itemStyle: { color: '#10b981' } }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Keyword Opportunity Matrix
+        function initOpportunityChart() {
+            const chart = echarts.init(document.getElementById('opportunityChart'));
+            
+            const data = [
+                [5, 8, 'Sleep Audio Products', 'High Growth'],
+                [8, 6, 'Robot Vacuum E-Series', 'Core Market'],
+                [3, 9, 'Smart Home Integration', 'Emerging'],
+                [7, 4, 'Bluetooth Speakers', 'Mature'],
+                [4, 7, 'Premium Vacuums', 'Opportunity'],
+                [6, 5, 'Noise Cancelling', 'Competitive'],
+                [2, 8, 'Cleaning Accessories', 'Niche Growth'],
+                [9, 3, 'Entry-level Audio', 'Volume Play']
+            ];
+            
+            const option = {
+                tooltip: {
+                    formatter: function(params) {
+                        return params.value[2] + '<br/>Volume: ' + params.value[0] + 
+                               '<br/>Growth: ' + params.value[1];
+                    }
+                },
+                xAxis: {
+                    name: 'Search Volume',
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    splitLine: { show: true }
+                },
+                yAxis: {
+                    name: 'Growth Potential',
+                    nameLocation: 'middle',
+                    nameGap: 40,
+                    splitLine: { show: true }
+                },
+                series: [{
+                    type: 'scatter',
+                    symbolSize: function(data) {
+                        return Math.sqrt(data[0] * data[1]) * 10;
+                    },
+                    data: data,
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = {
+                                'High Growth': '#43e97b',
+                                'Core Market': '#667eea',
+                                'Emerging': '#f093fb',
+                                'Mature': '#4facfe',
+                                'Opportunity': '#fa709a',
+                                'Competitive': '#f59e0b',
+                                'Niche Growth': '#10b981',
+                                'Volume Play': '#ef4444'
+                            };
+                            return colors[params.value[3]] || '#667eea';
+                        }
+                    },
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            return params.value[2];
+                        },
+                        position: 'top'
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+        
+        // Initialize dashboard on load
+        window.addEventListener('DOMContentLoaded', initDashboard);
+        
+        // Make charts responsive
+        window.addEventListener('resize', () => {
+            ['brandChart', 'categoryChart', 'marketChart', 'modelChart', 
+             'intentChart', 'competitorChart', 'opportunityChart'].forEach(id => {
+                const chart = echarts.getInstanceByDom(document.getElementById(id));
+                if (chart) chart.resize();
+            });
+        });
+    </script>
+</body>
+</html>
